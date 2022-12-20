@@ -1,109 +1,108 @@
-const cloneDeep = x => {
-  return JSON.parse(JSON.stringify(x))
-}
+const cloneDeep = (x) => {
+  return JSON.parse(JSON.stringify(x));
+};
 
-const freeze = x => Object.freeze(cloneDeep(x))
+// Object.freeze를 통해 객체의 복사본을 가져와 동결시킴
+const freeze = (x) => Object.freeze(cloneDeep(x));
 
 const INITIAL_STATE = {
   todos: [],
-  currentFilter: 'All'
-}
+  currentFilter: "All",
+};
 
 export default (initalState = INITIAL_STATE) => {
-  const state = cloneDeep(initalState)
-  let listeners = []
+  const state = cloneDeep(initalState);
+  let listeners = [];
 
-  const addChangeListener = listener => {
-    listeners.push(listener)
+  const addChangeListener = (listener) => {
+    listeners.push(listener); // listeners 레지스트리에 추가
+    listener(freeze(state)); // 불변 상태를 넣어줌
+    // unsubscribe 작업
+    return () => (listeners = listeners.filter((l) => l !== listener));
+  };
 
-    listener(freeze(state))
-
-    return () => {
-      listeners = listeners.filter(l => l !== listener)
-    }
-  }
-
+  // listenrs 레지스트리에 있는 콜백 함수들을 실행
   const invokeListeners = () => {
-    const data = freeze(state)
-    listeners.forEach(l => l(data))
-  }
+    const data = freeze(state);
+    listeners.forEach((l) => l(data)); //[?] addChangeListener 실행중 상태인가
+  };
 
-  const addItem = text => {
+  const addItem = (text) => {
     if (!text) {
-      return
+      return;
     }
 
     state.todos.push({
       text,
-      completed: false
-    })
+      completed: false,
+    });
 
-    invokeListeners()
-  }
+    invokeListeners();
+  };
 
   const updateItem = (index, text) => {
     if (!text) {
-      return
+      return;
     }
 
     if (index < 0) {
-      return
+      return;
     }
 
     if (!state.todos[index]) {
-      return
+      return;
     }
 
-    state.todos[index].text = text
+    state.todos[index].text = text;
 
-    invokeListeners()
-  }
+    invokeListeners();
+  };
 
-  const deleteItem = index => {
+  const deleteItem = (index) => {
     if (index < 0) {
-      return
+      return;
     }
 
     if (!state.todos[index]) {
-      return
+      return;
     }
 
-    state.todos.splice(index, 1)
+    state.todos.splice(index, 1);
 
-    invokeListeners()
-  }
+    invokeListeners();
+  };
 
-  const toggleItemCompleted = index => {
+  const toggleItemCompleted = (index) => {
     if (index < 0) {
-      return
+      return;
     }
 
     if (!state.todos[index]) {
-      return
+      return;
     }
 
-    state.todos[index].completed = !state.todos[index].completed
+    state.todos[index].completed = !state.todos[index].completed;
 
-    invokeListeners()
-  }
+    invokeListeners();
+  };
 
   const completeAll = () => {
-    state.todos.forEach(t => {
-      t.completed = true
-    })
+    state.todos.forEach((t) => {
+      t.completed = true;
+    });
 
-    invokeListeners()
-  }
+    invokeListeners();
+  };
 
   const clearCompleted = () => {
-    state.todos = state.todos.filter(t => !t.completed)
-    invokeListeners()
-  }
+    state.todos = state.todos.filter((t) => !t.completed);
+    invokeListeners();
+  };
 
-  const changeFilter = filter => {
-    state.currentFilter = filter
-    invokeListeners()
-  }
+  const changeFilter = (filter) => {
+    state.currentFilter = filter;
+    invokeListeners();
+  };
 
   return {
     addItem,
@@ -113,6 +112,6 @@ export default (initalState = INITIAL_STATE) => {
     completeAll,
     clearCompleted,
     changeFilter,
-    addChangeListener
-  }
-}
+    addChangeListener,
+  };
+};
